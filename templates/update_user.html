@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Update User
+{% endblock title %}
+
+
+{% block content %}
+<h1 class="my-5">Update your User data</h1>
+<br>
+<div class="shadow p-3 mb-5 bg-body rounded">
+    <form action="/user/update/{{ user.id }}" method="post">
+        {{ form.hidden_tag() }}
+        {{ form.name.label('Update your name',class='form-label') }}
+        {{ form.name(class='form-control', value=user.name) }}
+        {{ form.email.label('Update your email',class='form-label') }}
+        {{ form.email(class='form-control', value=user.email) }}
+        <br>
+        {{ form.submit(class='btn btn-secondary btn-sm') }}
+    </form>
+</div>
+{% endblock content %}
