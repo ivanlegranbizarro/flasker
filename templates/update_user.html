@@ -15,6 +15,8 @@ Update User
         {{ form.name(class='form-control', value=user.name) }}
         {{ form.email.label('Update your email',class='form-label') }}
         {{ form.email(class='form-control', value=user.email) }}
+        {{ form.favorite_color.label('Update your favorite color',class='form-label') }}
+        {{ form.favorite_color(class='form-control', value=user.favorite_color) }}
         <br>
         {{ form.submit(class='btn btn-secondary btn-sm') }}
     </form>

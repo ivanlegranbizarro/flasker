@@ -1,8 +1,12 @@
 from flask import Flask, redirect, render_template, flash, request, url_for
+
 from flask_wtf import FlaskForm
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired, Email
-from flask_sqlalchemy import SQLAlchemy
+
 from datetime import datetime
 
 # Create a Flask Instance
@@ -15,6 +19,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SECRET_KEY'] = 'mysecretkey'
 # Initialize Database
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 
 # Create a Model
@@ -22,6 +27,7 @@ class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(50), nullable=False, unique=True)
+    favorite_color = db.Column(db.String(50))
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
 
     # Create a string
@@ -35,6 +41,7 @@ class UserForm(FlaskForm):
     name = StringField('What is your name?', validators=[DataRequired()])
     email = StringField('What is your email?',
                         validators=[Email(), DataRequired()])
+    favorite_color = StringField('What is your favorite color?')
     submit = SubmitField('Submit')
 
 
@@ -69,12 +76,17 @@ def add_user():
     if form.validate_on_submit():
         user = Users.query.filter_by(email=form.email.data).first()
         if user is None:
-            user = Users(name=form.name.data, email=form.email.data)
+            user = Users(name=form.name.data,
+                         email=form.email.data,
+                         favorite_color=form.favorite_color.data)
             db.session.add(user)
             db.session.commit()
+        else:
+            flash('User already exists', 'danger')
         name = form.name.data
         form.name.data = ''
         form.email.data = ''
+        form.favorite_color.data = ''
         flash('User added successfully!', 'success')
     all_users = Users.query.order_by(Users.date_added.desc()).all()
     return render_template('add_user.html',
@@ -92,6 +104,7 @@ def update_user(id):
         if form.validate_on_submit():
             user.name = form.name.data
             user.email = form.email.data
+            user.favorite_color = form.favorite_color.data
             db.session.commit()
             flash('User updated successfully!', 'success')
             return redirect(url_for('add_user'))
