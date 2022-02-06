@@ -114,5 +114,26 @@ def update_user(id):
         return render_template('update_user.html', form=form, user=user)
 
 
+# Delete Confirmation Page
+@app.route('/user/confirmation_delete/<int:id>', methods=['GET', 'POST'])
+def confirmation_delete(id):
+    user = Users.query.get_or_404(id)
+    return render_template('delete_user.html', user=user)
+
+
+# Delete User Page
+@app.route('/user/delete/<int:id>')
+def delete_user(id):
+    user = Users.query.get_or_404(id)
+    try:
+        db.session.delete(user)
+        db.session.commit()
+        flash('User deleted successfully!', 'success')
+        return redirect(url_for('add_user'))
+    except:
+        flash('Error deleting user!', 'danger')
+        return redirect(url_for('add_user'))
+
+
 if __name__ == '__main__':
     app.run()
