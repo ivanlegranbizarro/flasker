@@ -56,7 +56,8 @@ Add a new User!
         {% for user in all_users %}
         <td>
             <a href="{{ url_for('update_user', id=user.id ) }}">{{ user.id }} - {{ user.name }}</a> - {{ user.email }} -
-            {{ user.favorite_color }} <a href="{{ url_for('confirmation_delete', id=user.id) }}" class="btn btn-danger btn-sm">Delete</a>
+            {{ user.favorite_color }} <a href="{{ url_for('confirmation_delete', id=user.id) }}"
+                class="btn btn-danger btn-sm">Delete</a>
         </td>
     </tr>
     {% endfor %}
