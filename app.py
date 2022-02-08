@@ -12,7 +12,7 @@ from datetime import datetime
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
 
 # Create a Flask Instance
 
@@ -110,6 +110,7 @@ class PostForm(FlaskForm):
 
 # Add Post Page
 @app.route('/add-post', methods=['GET', 'POST'])
+@login_required
 def add_post():
     form = PostForm()
     if form.validate_on_submit():
@@ -145,6 +146,7 @@ def show_post(id):
 
 # Edit Post Page
 @app.route('/edit-post/<int:id>', methods=['GET', 'POST'])
+@login_required
 def edit_post(id):
     post = Posts.query.get_or_404(id)
     form = PostForm()
@@ -166,6 +168,7 @@ def edit_post(id):
 
 # Delete Post Page
 @app.route('/delete-post/<int:id>', methods=['POST'])
+@login_required
 def delete_post(id):
     post = Posts.query.get_or_404(id)
     db.session.delete(post)
@@ -176,6 +179,7 @@ def delete_post(id):
 
 # Confirmation Delete Post Page
 @app.route('/confirm-delete-post/<int:id>')
+@login_required
 def confirmation_delete_post(id):
     post = Posts.query.get_or_404(id)
     return render_template('confirm_delete_post.html', post=post)
@@ -237,6 +241,7 @@ def add_user():
 
 # Update User Page
 @app.route('/user/update/<int:id>', methods=['GET', 'POST'])
+@login_required
 def update_user(id):
     user = Users.query.get_or_404(id)
     form = UserForm()
@@ -257,6 +262,7 @@ def update_user(id):
 
 # Delete Confirmation Page
 @app.route('/user/confirmation_delete/<int:id>', methods=['GET', 'POST'])
+@login_required
 def confirmation_delete(id):
     user = Users.query.get_or_404(id)
     return render_template('delete_user.html', user=user)
@@ -264,6 +270,7 @@ def confirmation_delete(id):
 
 # Delete User Page
 @app.route('/user/delete/<int:id>')
+@login_required
 def delete_user(id):
     user = Users.query.get_or_404(id)
     try:
@@ -287,14 +294,31 @@ class LoginForm(FlaskForm):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
-    if form.validate_on_submit():
-        user = Users.query.filter_by(email=form.email.data).first()
-        # Check the hash
-        if check_password_hash(user.password_hash, form.password_hash.data):
-            login_user(user)
-            flash('You have successfully logged in!', 'success')
-            return redirect(url_for('index'))
+    if form.email.data:
+        if form.validate_on_submit():
+            user = Users.query.filter_by(email=form.email.data).first()
+            if user:
+                # Check the hash
+                if check_password_hash(user.password_hash,
+                                       form.password_hash.data):
+                    login_user(user)
+                    flash('You have successfully logged in!', 'success')
+                    return redirect(url_for('index'))
+                else:
+                    flash(
+                        'Login unsuccessful. Please check email and password',
+                        'danger')
+            else:
+                flash('This user does not exist', 'danger')
         else:
-            flash('Login unsuccessful. Please check email and password',
-                  'danger')
+            flash('Please, put a valid email', 'danger')
     return render_template('login.html', form=form)
+
+
+# Logout Page
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You have successfully logged out!', 'success')
+    return redirect(url_for('index'))
