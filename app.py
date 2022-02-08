@@ -152,6 +152,23 @@ def edit_post(id):
     return render_template('edit_post.html', form=form, post=post)
 
 
+# Delete Post Page
+@app.route('/delete-post/<int:id>', methods=['POST'])
+def delete_post(id):
+    post = Posts.query.get_or_404(id)
+    db.session.delete(post)
+    db.session.commit()
+    flash('Your post has been deleted!', 'success')
+    return redirect(url_for('all_posts'))
+
+
+# Confirmation Delete Post Page
+@app.route('/confirm-delete-post/<int:id>')
+def confirmation_delete_post(id):
+    post = Posts.query.get_or_404(id)
+    return render_template('confirm_delete_post.html', post=post)
+
+
 # Create a route decorator
 
 
