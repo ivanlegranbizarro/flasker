@@ -4,10 +4,13 @@ from flask_wtf import FlaskForm
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
-from wtforms import StringField, SubmitField
-from wtforms.validators import DataRequired, Email
+from wtforms import StringField, SubmitField, PasswordField
+from wtforms.validators import DataRequired, Email, EqualTo
+from wtforms.widgets import TextArea
 
 from datetime import datetime
+
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # Create a Flask Instance
 
@@ -22,6 +25,13 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 
+# Return some JSON
+@app.route('/date')
+def get_current_date():
+    favorite_pizza = {'John': 'Pepperoni', 'Mary': 'Cheese', 'Bob': 'Hawaiian'}
+    return favorite_pizza
+
+
 # Create a Model
 class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -29,11 +39,33 @@ class Users(db.Model):
     email = db.Column(db.String(50), nullable=False, unique=True)
     favorite_color = db.Column(db.String(50))
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
+    password_hash = db.Column(db.String(128))
+
+    @property
+    def password(self):
+        raise AttributeError('Password is not a readable attribute')
+
+    @password.setter
+    def password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def verify_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
     # Create a string
 
     def __repr__(self):
         return f'User {self.name}'
+
+
+# Create a Blog Post Model
+class Posts(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    slug = db.Column(db.String(100), nullable=False, unique=True)
+    content = db.Column(db.Text, nullable=False)
+    author = db.Column(db.String(100), nullable=False)
+    date_posted = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 # Create a form class
@@ -42,7 +74,82 @@ class UserForm(FlaskForm):
     email = StringField('What is your email?',
                         validators=[Email(), DataRequired()])
     favorite_color = StringField('What is your favorite color?')
+    password_hash = PasswordField('What is your password?',
+                                  validators=[
+                                      DataRequired(),
+                                      EqualTo('password_hash2',
+                                              message='Passwords must match')
+                                  ])
+    password_hash2 = PasswordField('Confirm your password',
+                                   validators=[DataRequired()])
     submit = SubmitField('Submit')
+
+
+# Create Post Form
+class PostForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired()])
+    slug = StringField('Slug', validators=[DataRequired()])
+    content = StringField('Content',
+                          validators=[DataRequired()],
+                          widget=TextArea())
+    author = StringField('Author', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+
+# Add Post Page
+@app.route('/add-post', methods=['GET', 'POST'])
+def add_post():
+    form = PostForm()
+    if form.validate_on_submit():
+        title = form.title.data
+        slug = form.slug.data
+        content = form.content.data
+        author = form.author.data
+        post = Posts(title=title, slug=slug, content=content, author=author)
+        form.title.data = ''
+        form.content.data = ''
+        form.slug.data = ''
+        form.author.data = ''
+
+        db.session.add(post)
+        db.session.commit()
+        flash('Your post has been added!', 'success')
+    return render_template('add_post.html', form=form)
+
+
+# Show All Posts Page
+@app.route('/all-posts')
+def all_posts():
+    posts = Posts.query.all()
+    return render_template('all_posts.html', posts=posts)
+
+
+# Show Post Page
+@app.route('/show-post/<int:id>')
+def show_post(id):
+    post = Posts.query.get_or_404(id)
+    return render_template('show_post.html', post=post)
+
+
+# Edit Post Page
+@app.route('/edit-post/<int:id>', methods=['GET', 'POST'])
+def edit_post(id):
+    post = Posts.query.get_or_404(id)
+    form = PostForm()
+    if form.validate_on_submit():
+        post.title = form.title.data
+        post.slug = form.slug.data
+        post.content = form.content.data
+        post.author = form.author.data
+        db.session.commit()
+        flash('Your post has been updated!', 'success')
+        return redirect(url_for('show_post', id=post.id))
+    elif request.method == 'GET':
+        form.title.data = post.title
+        form.slug.data = post.slug
+        form.content.data = post.content
+        form.author.data = post.author
+    return render_template('edit_post.html', form=form, post=post)
 
 
 # Create a route decorator
@@ -76,9 +183,12 @@ def add_user():
     if form.validate_on_submit():
         user = Users.query.filter_by(email=form.email.data).first()
         if user is None:
+            hashed_pwd = generate_password_hash(form.password_hash.data,
+                                                method='sha256')
             user = Users(name=form.name.data,
                          email=form.email.data,
-                         favorite_color=form.favorite_color.data)
+                         favorite_color=form.favorite_color.data,
+                         password_hash=hashed_pwd)
             db.session.add(user)
             db.session.commit()
         else:
@@ -87,6 +197,7 @@ def add_user():
         form.name.data = ''
         form.email.data = ''
         form.favorite_color.data = ''
+        form.password_hash.data = ''
         flash('User added successfully!', 'success')
     all_users = Users.query.order_by(Users.date_added.desc()).all()
     return render_template('add_user.html',
@@ -105,6 +216,7 @@ def update_user(id):
             user.name = form.name.data
             user.email = form.email.data
             user.favorite_color = form.favorite_color.data
+            user.password_hash = form.password_hash.data
             db.session.commit()
             flash('User updated successfully!', 'success')
             return redirect(url_for('add_user'))
@@ -133,7 +245,3 @@ def delete_user(id):
     except:
         flash('Error deleting user!', 'danger')
         return redirect(url_for('add_user'))
-
-
-if __name__ == '__main__':
-    app.run()
