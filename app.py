@@ -1,9 +1,10 @@
-from flask import Flask, redirect, render_template, flash, request, url_for
+from re import I
+from flask import Flask, g, redirect, render_template, flash, request, url_for
 
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
-from webforms import UserForm, PostForm, LoginForm
+from webforms import UserForm, PostForm, LoginForm, SearchForm
 
 from datetime import datetime
 
@@ -33,6 +34,13 @@ login_manager.login_view = 'login'
 @login_manager.user_loader
 def load_user(user_id):
     return Users.query.get(int(user_id))
+
+
+# Pass stuff to navbar
+@app.context_processor
+def base():
+    form = SearchForm()
+    return dict(form=form)
 
 
 # Return some JSON
@@ -263,6 +271,20 @@ def page_not_found(e):
 @app.errorhandler(500)
 def internal_server_error(e):
     return render_template('500.html'), 500
+
+
+# Create Search Function
+@app.route('/search', methods=['POST'])
+def search():
+    form = SearchForm()
+    posts = Posts.query
+    if form.validate_on_submit():
+        posts = posts.filter(Posts.title.contains(form.searched.data))
+        return render_template('searched.html',
+                               form=form,
+                               searched=form.searched.data, posts=posts)
+    else:
+        return redirect(url_for('index'))
 
 
 # Database Stuff

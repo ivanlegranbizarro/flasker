@@ -34,7 +34,7 @@
                         <a class="nav-link" href="{{ url_for('add_user') }}">Add User</a>
                     </li>
                     {% endif %}
-                        
+
                     {% if current_user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('add_post') }}">Add Post</a>
@@ -56,8 +56,9 @@
                         </div>
                     </li>
                 </ul>
-                <form class="d-flex my-2 my-lg-0">
-                    <input class="form-control me-sm-2" type="text" placeholder="Search">
+                <form class="d-flex my-2 my-lg-0" method="post" action="{{ url_for('search') }}">
+                    {{ form.hidden_tag() }}
+                    <input class="form-control me-sm-2" type="text" placeholder="Search" name="searched">
                     <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit">Search</button>
                 </form>
                 <ul class="navbar-nav ms-auto mt-2 mt-lg-0">
