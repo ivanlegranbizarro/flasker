@@ -17,6 +17,8 @@ Edit your post!
 {% endif %}
 {% endwith %}
 
+
+{% if current_user.is_authenticated and current_user.id == post.post_author.id %}
 <h1 class="my-5">Edit your post</h1>
 <br>
 <div class="shadow p-3 mb-5 bg-body rounded">
@@ -34,5 +36,9 @@ Edit your post!
         {{ form.submit(class='btn btn-secondary btn-sm') }}
     </form>
 </div>
+{% else %}
+<p class="my-5">Sorry, you can't edith this post</p>
+{% endif %}
+
 
 {% endblock content %}

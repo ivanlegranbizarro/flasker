@@ -102,11 +102,15 @@ def edit_post(id):
 @app.route('/delete-post/<int:id>', methods=['POST', 'GET'])
 @login_required
 def delete_post(id):
-    post = Posts.query.get_or_404(id)
-    db.session.delete(post)
-    db.session.commit()
-    flash('Your post has been deleted!', 'success')
-    return redirect(url_for('all_posts'))
+    if current_user.id == Posts.query.get_or_404(id).post_author.id:
+        post = Posts.query.get_or_404(id)
+        db.session.delete(post)
+        db.session.commit()
+        flash('Your post has been deleted!', 'success')
+        return redirect(url_for('all_posts'))
+    else:
+        flash('You are not authorized to delete this post', 'danger')
+        return redirect(url_for('all_posts'))
 
 
 # Confirmation Delete Post Page
