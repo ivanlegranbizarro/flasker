@@ -257,6 +257,9 @@ def update_user(id):
         else:
             flash('Error updating user!', 'danger')
     elif request.method == 'GET':
+        form.name.data = user.name
+        form.email.data = user.email
+        form.favorite_color.data = user.favorite_color
         return render_template('update_user.html', form=form, user=user)
 
 
@@ -281,6 +284,14 @@ def delete_user(id):
     except:
         flash('Error deleting user!', 'danger')
         return redirect(url_for('add_user'))
+
+
+# Show User Page
+@app.route('/user/show/<int:id>')
+@login_required
+def show_user(id):
+    user = Users.query.get_or_404(id)
+    return render_template('show_user.html', user=user)
 
 
 # Login Form
