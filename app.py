@@ -83,27 +83,31 @@ def show_post(id):
 def edit_post(id):
     post = Posts.query.get_or_404(id)
     form = PostForm()
-    if form.validate_on_submit():
-        post.title = form.title.data
-        post.slug = form.slug.data
-        post.content = form.content.data
-        db.session.commit()
-        flash('Your post has been updated!', 'success')
-        return redirect(url_for('show_post', id=post.id))
-    elif request.method == 'GET':
-        form.title.data = post.title
-        form.slug.data = post.slug
-        form.content.data = post.content
-        form.author.data = post.author
-    return render_template('edit_post.html', form=form, post=post)
+    if current_user.id == post.post_author.id:
+        if form.validate_on_submit():
+            post.title = form.title.data
+            post.slug = form.slug.data
+            post.content = form.content.data
+            db.session.commit()
+            flash('Your post has been updated!', 'success')
+            return redirect(url_for('show_post', id=post.id))
+        elif request.method == 'GET':
+            form.title.data = post.title
+            form.slug.data = post.slug
+            form.content.data = post.content
+            form.author.data = post.author
+        return render_template('edit_post.html', form=form, post=post)
+    else:
+        flash('You are not the author of this post!', 'danger')
+        return redirect(url_for('all_posts'))
 
 
 # Delete Post Page
 @app.route('/delete-post/<int:id>', methods=['POST', 'GET'])
 @login_required
 def delete_post(id):
-    if current_user.id == Posts.query.get_or_404(id).post_author.id:
-        post = Posts.query.get_or_404(id)
+    post = Posts.query.get_or_404(id)
+    if current_user.id == post.post_author.id:
         db.session.delete(post)
         db.session.commit()
         flash('Your post has been deleted!', 'success')
