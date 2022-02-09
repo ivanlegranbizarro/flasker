@@ -13,7 +13,7 @@ Show detail post from {{ post.title }}
     <div class="card-body">
         <h4 class="card-title">{{ post.title }}</h4>
         <p class="card-text">{{ post.content }}</p>
-        <p class="card-text">{{ post.author }}</p>
+        <p class="card-text">{{ post.post_author.name }}</p>
         <p class="card-text text-muted fst-italic">{{ post.date_posted.strftime('%b %d, %Y') }}</p>
         
         {% if current_user.is_authenticated %}

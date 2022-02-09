@@ -29,7 +29,7 @@ class PostForm(FlaskForm):
     content = StringField('Content',
                           validators=[DataRequired()],
                           widget=TextArea())
-    author = StringField('Author', validators=[DataRequired()])
+    author = StringField('Author')
     submit = SubmitField('Submit')
 
 

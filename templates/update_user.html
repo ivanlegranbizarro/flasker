@@ -6,7 +6,9 @@ Update User
 
 
 {% block content %}
+<h1 class="my-5">Update your user profile</h1>
 <br>
+{% if current_user.id == user.id %}
 <div class="shadow p-3 mb-5 bg-body rounded">
     <form action="/user/update/{{ user.id }}" method="post">
         {{ form.hidden_tag() }}
@@ -21,4 +23,8 @@ Update User
         <a href="{{ url_for('confirmation_delete', id=user.id) }}" class="btn btn-danger btn-sm">Delete</a>
     </form>
 </div>
+{% else %}
+<p>Sorry, you are not allowed for update this user's profile</p>
+{% endif %}
+
 {% endblock content %}

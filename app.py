@@ -9,7 +9,7 @@ from datetime import datetime
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 
 # Create a Flask Instance
 
@@ -48,15 +48,14 @@ def get_current_date():
 def add_post():
     form = PostForm()
     if form.validate_on_submit():
+        author = current_user.id
         title = form.title.data
         slug = form.slug.data
         content = form.content.data
-        author = form.author.data
         post = Posts(title=title, slug=slug, content=content, author=author)
         form.title.data = ''
         form.content.data = ''
         form.slug.data = ''
-        form.author.data = ''
 
         db.session.add(post)
         db.session.commit()
@@ -88,7 +87,6 @@ def edit_post(id):
         post.title = form.title.data
         post.slug = form.slug.data
         post.content = form.content.data
-        post.author = form.author.data
         db.session.commit()
         flash('Your post has been updated!', 'success')
         return redirect(url_for('show_post', id=post.id))
@@ -101,7 +99,7 @@ def edit_post(id):
 
 
 # Delete Post Page
-@app.route('/delete-post/<int:id>', methods=['POST'])
+@app.route('/delete-post/<int:id>', methods=['POST', 'GET'])
 @login_required
 def delete_post(id):
     post = Posts.query.get_or_404(id)
@@ -270,6 +268,7 @@ class Users(db.Model, UserMixin):
     favorite_color = db.Column(db.String(50))
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     password_hash = db.Column(db.String(128))
+    posts = db.relationship('Posts', backref='post_author', lazy=True)
 
     @property
     def password(self):
@@ -293,6 +292,6 @@ class Posts(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     slug = db.Column(db.String(100), nullable=False, unique=True)
+    author = db.Column(db.Integer, db.ForeignKey('users.id'))
     content = db.Column(db.Text, nullable=False)
-    author = db.Column(db.String(100), nullable=False)
     date_posted = db.Column(db.DateTime, default=datetime.utcnow)
