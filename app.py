@@ -264,6 +264,17 @@ def logout():
     return redirect(url_for('index'))
 
 
+# Create Admin Page
+@app.route('/admin', methods=['GET', 'POST'])
+@login_required
+def admin():
+    if current_user.id == 1:
+        return render_template('admin.html')
+    else:
+        flash('You are not authorized to view this page', 'danger')
+        return redirect(url_for('index'))
+
+
 #Invalid Url
 @app.errorhandler(404)
 def page_not_found(e):
