@@ -1,5 +1,4 @@
-from re import I
-from flask import Flask, g, redirect, render_template, flash, request, url_for
+from flask import Flask, redirect, render_template, flash, request, url_for
 
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -9,6 +8,8 @@ from webforms import UserForm, PostForm, LoginForm, SearchForm
 from datetime import datetime
 
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+from uuid import uuid4
 
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_ckeditor import CKEditor
@@ -23,6 +24,9 @@ ckeditor = CKEditor(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 # Secret Key
 app.config['SECRET_KEY'] = 'mysecretkey'
+
+UPLOAD_FOLDER = 'static/images'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Initialize Database
 db = SQLAlchemy(app)
@@ -157,6 +161,10 @@ def add_user():
             user = Users(name=form.name.data,
                          email=form.email.data,
                          favorite_color=form.favorite_color.data,
+                         about_author=form.about_author.data,
+                         profile_picture=secure_filename(
+                             form.profile_picture.data.filename) + '_' +
+                         str(uuid4()),
                          password_hash=hashed_pwd)
             db.session.add(user)
             db.session.commit()
@@ -166,6 +174,8 @@ def add_user():
         form.name.data = ''
         form.email.data = ''
         form.favorite_color.data = ''
+        form.about_author.data = ''
+        form.profile_picture.data = ''
         form.password_hash.data = ''
         flash('User added successfully!', 'success')
     all_users = Users.query.order_by(Users.date_added.desc()).all()
@@ -186,6 +196,8 @@ def update_user(id):
             user.name = form.name.data
             user.email = form.email.data
             user.favorite_color = form.favorite_color.data
+            user.about_author = form.about_author.data
+            user.profile_picture = form.profile_picture.data
             user.password_hash = form.password_hash.data
             db.session.commit()
             flash('User updated successfully!', 'success')
@@ -196,6 +208,8 @@ def update_user(id):
         form.name.data = user.name
         form.email.data = user.email
         form.favorite_color.data = user.favorite_color
+        form.profile_picture.data = user.profile_picture
+        form.about_author.data = user.about_author
         return render_template('update_user.html', form=form, user=user)
 
 
@@ -311,6 +325,8 @@ class Users(db.Model, UserMixin):
     name = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(50), nullable=False, unique=True)
     favorite_color = db.Column(db.String(50))
+    about_author = db.Column(db.Text)
+    profile_picture = db.Column(db.String(), nullable=True)
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
     password_hash = db.Column(db.String(128))
     posts = db.relationship('Posts', backref='post_author', lazy=True)

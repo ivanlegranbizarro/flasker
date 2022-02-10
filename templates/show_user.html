@@ -9,10 +9,19 @@ Update User
 <h1 class="my-5">Your profile</h1>
 <div class="shadow p-3 mb-5 bg-body rounded">
     <div class="card">
+        {% if user.profile_picture %}
+        <img class="card-img-top rounded float-left w-25" src="{{ user.profile_picture.url }}" alt="">
+        {% else %}
+        <img class="card-img-top rounded float-left w-25"
+            src="{{ url_for('static', filename='images/default-pict.jpg') }}" alt="">
+        {% endif %}
+
         <div class="card-body">
             <h4 class="card-title">{{ user.name }}</h4>
             <p class="card-text">Email: {{ user.email }}</p>
             <p class="card-text">Favorite color: {{ user.favorite_color }}</p>
+            <p class="card-text">About the author: {{ user.about_author|safe }}</p>
+            <p class="card-text">Profile Picture: {{ user.profile_picture }}</p>
             <a href="{{ url_for('update_user', id=user.id) }}" class="btn btn-warning btn-sm">Update</a>
         </div>
     </div>

@@ -10,7 +10,7 @@ Update User
 <br>
 {% if current_user.id == user.id %}
 <div class="shadow p-3 mb-5 bg-body rounded">
-    <form action="/user/update/{{ user.id }}" method="post">
+    <form action="/user/update/{{ user.id }}" method="post" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
         {{ form.name.label('Update your name',class='form-label') }}
         {{ form.name(class='form-control', value=user.name) }}
@@ -18,10 +18,16 @@ Update User
         {{ form.email(class='form-control', value=user.email) }}
         {{ form.favorite_color.label('Update your favorite color',class='form-label') }}
         {{ form.favorite_color(class='form-control', value=user.favorite_color) }}
+        {{ form.about_author.label('Update your about the author',class='form-label') }}
+        {{ form.about_author(class='form-control', value=user.about_author) }}
+        {{ form.profile_picture.label('Update your profile picture',class='form-label') }}
+        {{ form.profile_picture(class='form-control', value=user.profile_picture) }}
         <br>
         {{ form.submit(class='btn btn-secondary btn-sm') }}
         <a href="{{ url_for('confirmation_delete', id=user.id) }}" class="btn btn-danger btn-sm">Delete</a>
     </form>
+    {{ ckeditor.load() }}
+    {{ ckeditor.config(name='content')}}
 </div>
 {% else %}
 <p>Sorry, you are not allowed for update this user's profile</p>

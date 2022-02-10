@@ -1,8 +1,7 @@
 from flask_wtf import FlaskForm
 
-from wtforms import StringField, SubmitField, PasswordField
+from wtforms import StringField, SubmitField, PasswordField, FileField
 from wtforms.validators import DataRequired, Email, EqualTo
-from wtforms.widgets import TextArea
 
 from flask_ckeditor import CKEditorField
 
@@ -13,6 +12,7 @@ class UserForm(FlaskForm):
     email = StringField('What is your email?',
                         validators=[Email(), DataRequired()])
     favorite_color = StringField('What is your favorite color?')
+    about_author = CKEditorField('Tell us about yourself.')
     password_hash = PasswordField('What is your password?',
                                   validators=[
                                       DataRequired(),
@@ -21,6 +21,7 @@ class UserForm(FlaskForm):
                                   ])
     password_hash2 = PasswordField('Confirm your password',
                                    validators=[DataRequired()])
+    profile_picture = FileField('Upload a profile picture')
     submit = SubmitField('Submit')
 
 

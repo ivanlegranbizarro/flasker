@@ -34,7 +34,7 @@ Add a new User!
 <h1 class="my-5">User List:</h1>
 <br>
 <div class="shadow p-3 mb-5 bg-body rounded">
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
         {{ form.name.label(class='form-label') }}
         {{ form.name(class='form-control') }}
@@ -42,6 +42,10 @@ Add a new User!
         {{ form.email(class='form-control') }}
         {{ form.favorite_color.label(class='form-label') }}
         {{ form.favorite_color(class='form-control') }}
+        {{ form.about_author.label(class='form-label') }}
+        {{ form.about_author(class='form-control') }}
+        {{ form.profile_picture.label(class='form-label') }}
+        {{ form.profile_picture(class='form-control') }}
         {{ form.password_hash.label(class='form-label') }}
         {{ form.password_hash(class='form-control') }}
         {{ form.password_hash2.label(class='form-label') }}
@@ -49,6 +53,8 @@ Add a new User!
         <br>
         {{ form.submit(class='btn btn-secondary btn-sm') }}
     </form>
+    {{ ckeditor.load() }}
+    {{ ckeditor.config(name='content')}}
 </div>
 
 <table class="table table-hover table-bordered table-striped">
