@@ -12,7 +12,7 @@ Show detail post from {{ post.title }}
     <!-- <img class="card-img-top" src="holder.js/100x180/" alt=""> -->
     <div class="card-body">
         <h4 class="card-title">{{ post.title }}</h4>
-        <p class="card-text">{{ post.content }}</p>
+        <p class="card-text">{{ post.content|safe }}</p>
         <p class="card-text">{{ post.post_author.name }}</p>
         <p class="card-text text-muted fst-italic">{{ post.date_posted.strftime('%b %d, %Y') }}</p>
 

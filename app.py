@@ -11,10 +11,13 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_ckeditor import CKEditor
 
 # Create a Flask Instance
 
 app = Flask(__name__)
+
+ckeditor = CKEditor(app)
 
 # Add Database
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
@@ -282,7 +285,8 @@ def search():
         posts = posts.filter(Posts.title.contains(form.searched.data))
         return render_template('searched.html',
                                form=form,
-                               searched=form.searched.data, posts=posts)
+                               searched=form.searched.data,
+                               posts=posts)
     else:
         return redirect(url_for('index'))
 

@@ -35,6 +35,8 @@ Edit your post!
         <br>
         {{ form.submit(class='btn btn-secondary btn-sm') }}
     </form>
+    {{ ckeditor.load() }}
+    {{ ckeditor.config(name='content')}}
 </div>
 {% else %}
 <p class="my-5">Sorry, you can't edith this post</p>

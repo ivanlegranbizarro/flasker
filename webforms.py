@@ -4,6 +4,8 @@ from wtforms import StringField, SubmitField, PasswordField
 from wtforms.validators import DataRequired, Email, EqualTo
 from wtforms.widgets import TextArea
 
+from flask_ckeditor import CKEditorField
+
 
 # Create a form class
 class UserForm(FlaskForm):
@@ -26,9 +28,7 @@ class UserForm(FlaskForm):
 class PostForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     slug = StringField('Slug', validators=[DataRequired()])
-    content = StringField('Content',
-                          validators=[DataRequired()],
-                          widget=TextArea())
+    content = CKEditorField('Content', validators=[DataRequired()])
     author = StringField('Author')
     submit = SubmitField('Submit')
 
